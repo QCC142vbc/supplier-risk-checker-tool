@@ -60,6 +60,15 @@ class InventoryItem:
         print(f"Status: {self.status()}")
         print("------------------------------")
 
+def to_dict(self):
+    return {
+        "sku": self.sku,
+        "supplier": self.supplier,
+        "stock": self.stock,
+        "daily_demand": self.daily_demand,
+        "lead_time": self.lead_time,
+        "safety_stock": self.safety_stock
+    }
 
 def get_positive_int(prompt):
     while True:
