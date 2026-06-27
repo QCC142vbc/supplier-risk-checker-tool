@@ -162,3 +162,237 @@ class InventoryManager:
 
         for item in self.items:
             item.display()
+    
+    def search_sku(self):
+
+        if len(self.items) == 0:
+            print("\nInventory is empty.")
+            return
+
+        sku = get_non_empty(
+            "Enter SKU to search: "
+        )
+
+        for item in self.items:
+
+            if item.sku.lower() == sku.lower():
+
+                print("\nSKU FOUND")
+                item.display()
+                return
+
+        print("SKU not found.")
+
+    def update_stock(self):
+
+        if len(self.items) == 0:
+            print("\nInventory is empty.")
+            return
+
+        sku = get_non_empty(
+            "Enter SKU: "
+        )
+
+        for item in self.items:
+
+            if item.sku.lower() == sku.lower():
+
+                print(
+                    f"\nCurrent Stock: "
+                    f"{item.stock}"
+                )
+
+                new_stock = get_positive_int(
+                    "New Stock: "
+                )
+
+                item.stock = new_stock
+
+                print(
+                    "Stock updated successfully."
+                )
+
+                return
+
+        print("SKU not found.")
+
+    def remove_sku(self):
+
+        if len(self.items) == 0:
+            print("\nInventory is empty.")
+            return
+
+        sku = get_non_empty(
+            "Enter SKU to remove: "
+        )
+
+        for item in self.items:
+
+            if item.sku.lower() == sku.lower():
+
+                self.items.remove(item)
+
+                print(
+                    "SKU removed successfully."
+                )
+
+                return
+
+        print("SKU not found.")
+
+    def inventory_summary(self):
+
+        print("\n========== SUMMARY ==========")
+
+        print(
+            f"Total SKUs: "
+            f"{len(self.items)}"
+        )
+
+        if len(self.items) == 0:
+
+            print("Inventory is empty.")
+            print("============================")
+            return
+
+        total_stock = 0
+        reorder_count = 0
+
+        highest_stock = self.items[0]
+        lowest_stock = self.items[0]
+
+        for item in self.items:
+
+            total_stock += item.stock
+
+            if item.needs_reorder():
+                reorder_count += 1
+
+            if item.stock > highest_stock.stock:
+                highest_stock = item
+
+            if item.stock < lowest_stock.stock:
+                lowest_stock = item
+
+        average_stock = (
+            total_stock / len(self.items)
+        )
+
+        print(
+            f"Total Units: {total_stock}"
+        )
+
+        print(
+            f"Average Stock: "
+            f"{average_stock:.2f}"
+        )
+
+        print(
+            f"Reorders Needed: "
+            f"{reorder_count}"
+        )
+
+        print(
+            f"Highest Stock: "
+            f"{highest_stock.sku}"
+            f" ({highest_stock.stock})"
+        )
+
+        print(
+            f"Lowest Stock: "
+            f"{lowest_stock.sku}"
+            f" ({lowest_stock.stock})"
+        )
+
+        print("============================")
+
+    def reorder_report(self):
+
+        print("\n====== REORDER REPORT ======")
+
+        found = False
+
+        for item in self.items:
+
+            if item.needs_reorder():
+
+                found = True
+
+                print(
+                    f"{item.sku}"
+                )
+
+                print(
+                    f"Supplier: "
+                    f"{item.supplier}"
+                )
+
+                print(
+                    f"Current Stock: "
+                    f"{item.stock}"
+                )
+
+                print(
+                    f"Reorder Point: "
+                    f"{item.reorder_point()}"
+                )
+
+                print(
+                    f"Recommended Order: "
+                    f"{item.recommended_order_quantity()}"
+                )
+
+                print("----------------------")
+
+        if not found:
+
+            print(
+                "No products require reorder."
+            )
+
+    def supplier_summary(self):
+
+        if len(self.items) == 0:
+
+            print("\nInventory is empty.")
+            return
+
+        suppliers = {}
+
+        for item in self.items:
+
+            if item.supplier not in suppliers:
+
+                suppliers[item.supplier] = {
+                    "sku": 0,
+                    "stock": 0,
+                    "reorders": 0
+                }
+
+            suppliers[item.supplier]["sku"] += 1
+            suppliers[item.supplier]["stock"] += item.stock
+
+            if item.needs_reorder():
+                suppliers[item.supplier]["reorders"] += 1
+
+        print("\n===== SUPPLIER SUMMARY =====")
+
+        for supplier, data in suppliers.items():
+
+            print(
+                f"\nSupplier: {supplier}"
+            )
+
+            print(
+                f"SKUs: {data['sku']}"
+            )
+
+            print(
+                f"Total Stock: "
+                f"{data['stock']}"
+            )
+
+            print(
+                f"Reorders: "
+                f"{data['reorders']}"
+            )
