@@ -34,8 +34,7 @@ class InventoryItem:
     
     def reorder_point(self):
         return (
-            self.daily_demand *
-            self.lead_time
+            self.forecast_demand() * self.lead_time
         ) + self.safety_stock
 
     def recommended_order_quantity(self):
