@@ -17,6 +17,14 @@ class InventoryItem:
         self.lead_time = lead_time
         self.safety_stock = safety_stock
     
+    def forecast_demand(self, window=7):
+    if not self.demand_history:
+        return self.daily_demand
+
+    data = self.demand_history[-window:]
+
+    return sum(data) / len(data)
+    
     def record_demand(self, value):
     self.demand_history.append(value)
 
