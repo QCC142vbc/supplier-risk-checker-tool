@@ -445,12 +445,13 @@ def generate_purchase_orders(self):
             print("1. Add SKU")
             print("2. View Inventory")
             print("3. Search SKU")
-            print("4. Update Stock")
-            print("5. Remove SKU")
-            print("6. Inventory Summary")
-            print("7. Reorder Report")
-            print("8. Supplier Summary")
-            print("9. Exit")
+            print("4. Generate Purchase Orders")
+            print("5. Update Stock")
+            print("6. Remove SKU")
+            print("7. Inventory Summary")
+            print("8. Reorder Report")
+            print("9. Supplier Summary")
+            print("10. Exit")
 
             choice = input("\nSelect option: ").strip()
 
@@ -464,21 +465,24 @@ def generate_purchase_orders(self):
                 self.search_sku()
 
             elif choice == "4":
-                self.update_stock()
+                self.generate_purchase_orders()
 
             elif choice == "5":
-                self.remove_sku()
+                self.update_stock()
 
             elif choice == "6":
-                self.inventory_summary()
+                self.remove_sku()
 
             elif choice == "7":
-                self.reorder_report()
+                self.inventory_summary()
 
             elif choice == "8":
-                self.supplier_summary()
+                self.reorder_report()
 
             elif choice == "9":
+                self.supplier_summary()
+
+            elif choice == "10":
 
                 print("\nGoodbye.")
                 break
