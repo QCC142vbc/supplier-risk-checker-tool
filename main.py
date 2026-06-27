@@ -1,3 +1,5 @@
+import json
+
 class InventoryItem:
     def __init__(
         self,
