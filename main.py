@@ -60,8 +60,8 @@ class InventoryItem:
         print(f"Status: {self.status()}")
         print("------------------------------")
 
-def to_dict(self):
-    return {
+    def to_dict(self):
+        return {
         "sku": self.sku,
         "supplier": self.supplier,
         "stock": self.stock,
