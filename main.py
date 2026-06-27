@@ -497,7 +497,9 @@ def generate_purchase_orders(self):
             print("7. Inventory Summary")
             print("8. Reorder Report")
             print("9. Supplier Summary")
-            print("10. Exit")
+            print("10. Save Inventory")
+            print("11. Load Inventory")
+            print("12. Exit")
 
             choice = input("\nSelect option: ").strip()
 
@@ -529,6 +531,12 @@ def generate_purchase_orders(self):
                 self.supplier_summary()
 
             elif choice == "10":
+                self.save_inventory()
+
+            elif choice == "11":
+                self.load_inventory()
+            
+            elif choice == "12":
 
                 print("\nGoodbye.")
                 break
