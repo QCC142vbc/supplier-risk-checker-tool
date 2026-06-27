@@ -169,7 +169,8 @@ class InventoryManager:
         print(
             "\nSKU added successfully."
         )
-
+        self.save_inventory()
+    
     def show_inventory(self):
 
         if len(self.items) == 0:
@@ -236,7 +237,8 @@ class InventoryManager:
                 return
 
         print("SKU not found.")
-
+        self.save_inventory()
+        
     def remove_sku(self):
 
         if len(self.items) == 0:
@@ -260,7 +262,7 @@ class InventoryManager:
                 return
 
         print("SKU not found.")
-
+        self.save_inventory()
     def inventory_summary(self):
 
         print("\n========== SUMMARY ==========")
