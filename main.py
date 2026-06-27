@@ -1,5 +1,6 @@
 import json
 
+
 class InventoryItem:
     def __init__(
         self,
@@ -16,47 +17,36 @@ class InventoryItem:
         self.daily_demand = daily_demand
         self.lead_time = lead_time
         self.safety_stock = safety_stock
-    
+
+        self.demand_history = []
+
     def forecast_demand(self, window=7):
-    if not self.demand_history:
-        return self.daily_demand
+        if not self.demand_history:
+            return self.daily_demand
 
-    data = self.demand_history[-window:]
+        data = self.demand_history[-window:]
+        return sum(data) / len(data)
 
-    return sum(data) / len(data)
-    
     def record_demand(self, value):
-    self.demand_history.append(value)
+        self.demand_history.append(value)
 
-    # limit memory (last 30 days)
-    if len(self.demand_history) > 30:
-        self.demand_history.pop(0)
-    
+        if len(self.demand_history) > 30:
+            self.demand_history.pop(0)
+
     def reorder_point(self):
-        return (
-            self.forecast_demand() * self.lead_time
-        ) + self.safety_stock
+        return (self.forecast_demand() * self.lead_time) + self.safety_stock
 
     def recommended_order_quantity(self):
-        target_stock = (
-            self.daily_demand * 30
-        ) + self.safety_stock
-
+        target_stock = (self.daily_demand * 30) + self.safety_stock
         quantity = target_stock - self.stock
 
-        if quantity < 0:
-            return 0
-
-        return quantity
+        return max(0, quantity)
 
     def needs_reorder(self):
         return self.stock <= self.reorder_point()
 
     def status(self):
-        if self.needs_reorder():
-            return "REORDER REQUIRED"
-
-        return "STOCK LEVEL OK"
+        return "REORDER REQUIRED" if self.needs_reorder() else "STOCK LEVEL OK"
 
     def display(self):
         print("\n------------------------------")
@@ -64,554 +54,284 @@ class InventoryItem:
         print(f"Supplier: {self.supplier}")
         print(f"Current Stock: {self.stock}")
         print(f"Daily Demand: {self.daily_demand}")
+        print(f"Forecast Demand: {self.forecast_demand():.2f}")
         print(f"Lead Time: {self.lead_time} days")
         print(f"Safety Stock: {self.safety_stock}")
         print(f"Reorder Point: {self.reorder_point()}")
-        print(
-            f"Recommended Order: "
-            f"{self.recommended_order_quantity()}"
-        )
+        print(f"Recommended Order: {self.recommended_order_quantity()}")
         print(f"Status: {self.status()}")
         print("------------------------------")
-        print(f"Forecast Demand: {self.forecast_demand():.2f}")
-        
+
     def to_dict(self):
         return {
-        "sku": self.sku,
-        "supplier": self.supplier,
-        "stock": self.stock,
-        "daily_demand": self.daily_demand,
-        "lead_time": self.lead_time,
-        "safety_stock": self.safety_stock
-    }
-    
+            "sku": self.sku,
+            "supplier": self.supplier,
+            "stock": self.stock,
+            "daily_demand": self.daily_demand,
+            "lead_time": self.lead_time,
+            "safety_stock": self.safety_stock
+        }
+
     @staticmethod
-def from_dict(data):
-    return InventoryItem(
-        data["sku"],
-        data["supplier"],
-        data["stock"],
-        data["daily_demand"],
-        data["lead_time"],
-        data["safety_stock"]
-    )
+    def from_dict(data):
+        return InventoryItem(
+            data["sku"],
+            data["supplier"],
+            data["stock"],
+            data["daily_demand"],
+            data["lead_time"],
+            data["safety_stock"]
+        )
+
+
 def get_positive_int(prompt):
     while True:
-
         try:
             value = int(input(prompt))
-
             if value < 0:
-                print(
-                    "Value cannot be negative."
-                )
+                print("Value cannot be negative.")
                 continue
-
             return value
-
         except ValueError:
-            print(
-                "Please enter a valid number."
-            )
+            print("Invalid number.")
 
 
 def get_non_empty(prompt):
-
     while True:
-
         value = input(prompt).strip()
-
         if value == "":
-            print(
-                "Input cannot be empty."
-            )
+            print("Cannot be empty.")
             continue
-
         return value
 
-FILE_NAME = "inventory.json"
-self.demand_history = []
-class InventoryManager:
 
+FILE_NAME = "inventory.json"
+
+
+class InventoryManager:
     def __init__(self):
         self.items = []
         self.load_inventory()
-    def add_item(self):
 
+    def add_item(self):
         print("\nADD NEW SKU")
 
         sku = get_non_empty("SKU: ")
 
         for item in self.items:
-
             if item.sku.lower() == sku.lower():
-
-                print(
-                    "SKU already exists."
-                )
+                print("SKU already exists.")
                 return
 
-        supplier = get_non_empty(
-            "Supplier: "
-        )
+        supplier = get_non_empty("Supplier: ")
+        stock = get_positive_int("Current Stock: ")
+        demand = get_positive_int("Daily Demand: ")
+        lead = get_positive_int("Lead Time (days): ")
+        safety = get_positive_int("Safety Stock: ")
 
-        stock = get_positive_int(
-            "Current Stock: "
-        )
-
-        demand = get_positive_int(
-            "Daily Demand: "
-        )
-
-        lead = get_positive_int(
-            "Lead Time (days): "
-        )
-
-        safety = get_positive_int(
-            "Safety Stock: "
-        )
-
-        item = InventoryItem(
-            sku,
-            supplier,
-            stock,
-            demand,
-            lead,
-            safety
-        )
-
+        item = InventoryItem(sku, supplier, stock, demand, lead, safety)
         self.items.append(item)
 
-        print(
-            "\nSKU added successfully."
-        )
         self.save_inventory()
-    
+        print("SKU added successfully.")
+
     def show_inventory(self):
-
-        if len(self.items) == 0:
-
-            print(
-                "\nInventory is empty."
-            )
+        if not self.items:
+            print("Inventory is empty.")
             return
-
-        print("\n===== INVENTORY =====")
 
         for item in self.items:
             item.display()
-    
+
     def search_sku(self):
-
-        if len(self.items) == 0:
-            print("\nInventory is empty.")
-            return
-
-        sku = get_non_empty(
-            "Enter SKU to search: "
-        )
+        sku = get_non_empty("Enter SKU: ")
 
         for item in self.items:
-
             if item.sku.lower() == sku.lower():
-
-                print("\nSKU FOUND")
                 item.display()
                 return
 
         print("SKU not found.")
 
     def update_stock(self):
-
-        if len(self.items) == 0:
-            print("\nInventory is empty.")
-            return
-
-        sku = get_non_empty(
-            "Enter SKU: "
-        )
+        sku = get_non_empty("Enter SKU: ")
 
         for item in self.items:
-
             if item.sku.lower() == sku.lower():
-
-                print(
-                    f"\nCurrent Stock: "
-                    f"{item.stock}"
-                )
-
-                new_stock = get_positive_int(
-                    "New Stock: "
-                )
-
-                item.stock = new_stock
-
-                print(
-                    "Stock updated successfully."
-                )
-
+                item.stock = get_positive_int("New Stock: ")
+                self.save_inventory()
+                print("Stock updated.")
                 return
 
         print("SKU not found.")
-        self.save_inventory()
-        
+
     def remove_sku(self):
-
-        if len(self.items) == 0:
-            print("\nInventory is empty.")
-            return
-
-        sku = get_non_empty(
-            "Enter SKU to remove: "
-        )
+        sku = get_non_empty("Enter SKU: ")
 
         for item in self.items:
-
             if item.sku.lower() == sku.lower():
-
                 self.items.remove(item)
-
-                print(
-                    "SKU removed successfully."
-                )
-
+                self.save_inventory()
+                print("SKU removed.")
                 return
 
         print("SKU not found.")
-        self.save_inventory()
+
     def inventory_summary(self):
+        print("\nSUMMARY")
+        print(f"Total SKUs: {len(self.items)}")
 
-        print("\n========== SUMMARY ==========")
-
-        print(
-            f"Total SKUs: "
-            f"{len(self.items)}"
-        )
-
-        if len(self.items) == 0:
-
-            print("Inventory is empty.")
-            print("============================")
+        if not self.items:
             return
 
-        total_stock = 0
-        reorder_count = 0
+        total_stock = sum(i.stock for i in self.items)
+        reorder_count = sum(1 for i in self.items if i.needs_reorder())
 
-        highest_stock = self.items[0]
-        lowest_stock = self.items[0]
-
-        for item in self.items:
-
-            total_stock += item.stock
-
-            if item.needs_reorder():
-                reorder_count += 1
-
-            if item.stock > highest_stock.stock:
-                highest_stock = item
-
-            if item.stock < lowest_stock.stock:
-                lowest_stock = item
-
-        average_stock = (
-            total_stock / len(self.items)
-        )
-
-        print(
-            f"Total Units: {total_stock}"
-        )
-
-        print(
-            f"Average Stock: "
-            f"{average_stock:.2f}"
-        )
-
-        print(
-            f"Reorders Needed: "
-            f"{reorder_count}"
-        )
-
-        print(
-            f"Highest Stock: "
-            f"{highest_stock.sku}"
-            f" ({highest_stock.stock})"
-        )
-
-        print(
-            f"Lowest Stock: "
-            f"{lowest_stock.sku}"
-            f" ({lowest_stock.stock})"
-        )
-
-        print("============================")
+        print(f"Total Stock: {total_stock}")
+        print(f"Reorders Needed: {reorder_count}")
 
     def reorder_report(self):
-
-        print("\n====== REORDER REPORT ======")
+        print("\nREORDER REPORT")
 
         found = False
 
         for item in self.items:
-
             if item.needs_reorder():
-
                 found = True
-
-                print(
-                    f"{item.sku}"
-                )
-
-                print(
-                    f"Supplier: "
-                    f"{item.supplier}"
-                )
-
-                print(
-                    f"Current Stock: "
-                    f"{item.stock}"
-                )
-
-                print(
-                    f"Reorder Point: "
-                    f"{item.reorder_point()}"
-                )
-
-                print(
-                    f"Recommended Order: "
-                    f"{item.recommended_order_quantity()}"
-                )
-
-                print("----------------------")
+                print(f"{item.sku} | {item.recommended_order_quantity()} pcs")
 
         if not found:
-
-            print(
-                "No products require reorder."
-            )
+            print("No products require reorder.")
 
     def abc_analysis(self):
-    if not self.items:
-        print("Inventory is empty.")
-        return
-
-    # Annual consumption proxy (demand * stock importance)
-    scored_items = []
-
-    for item in self.items:
-        annual_value = item.daily_demand * 365 * item.stock
-        scored_items.append((item, annual_value))
-
-    # sort descending
-    scored_items.sort(key=lambda x: x[1], reverse=True)
-
-    total = sum(score for _, score in scored_items)
-
-    if total == 0:
-        print("No meaningful demand data.")
-        return
-
-    print("\n==============================")
-    print(" ABC ANALYSIS")
-    print("==============================")
-
-    cumulative = 0
-
-    for item, score in scored_items:
-        cumulative += score
-        ratio = cumulative / total
-
-        if ratio <= 0.7:
-            category = "A"
-        elif ratio <= 0.9:
-            category = "B"
-        else:
-            category = "C"
-
-        print(
-            f"{item.sku} | "
-            f"Supplier: {item.supplier} | "
-            f"Category: {category}"
-        )
-
-    def supplier_summary(self):
-
-        if len(self.items) == 0:
-
-            print("\nInventory is empty.")
+        if not self.items:
+            print("Inventory is empty.")
             return
 
+        scored = []
+
+        for item in self.items:
+            value = item.daily_demand * 365 * item.stock
+            scored.append((item, value))
+
+        scored.sort(key=lambda x: x[1], reverse=True)
+
+        total = sum(v for _, v in scored)
+
+        if total == 0:
+            print("No meaningful demand data.")
+            return
+
+        print("\nABC ANALYSIS")
+
+        cumulative = 0
+
+        for item, value in scored:
+            cumulative += value
+            ratio = cumulative / total
+
+            if ratio <= 0.7:
+                cat = "A"
+            elif ratio <= 0.9:
+                cat = "B"
+            else:
+                cat = "C"
+
+            print(f"{item.sku} | {cat}")
+
+    def supplier_summary(self):
         suppliers = {}
 
         for item in self.items:
-
             if item.supplier not in suppliers:
-
-                suppliers[item.supplier] = {
-                    "sku": 0,
-                    "stock": 0,
-                    "reorders": 0
-                }
+                suppliers[item.supplier] = {"sku": 0, "stock": 0, "reorders": 0}
 
             suppliers[item.supplier]["sku"] += 1
             suppliers[item.supplier]["stock"] += item.stock
+            suppliers[item.supplier]["reorders"] += int(item.needs_reorder())
 
-            if item.needs_reorder():
-                suppliers[item.supplier]["reorders"] += 1
+        for s, d in suppliers.items():
+            print(f"\n{s}")
+            print(d)
 
-        print("\n===== SUPPLIER SUMMARY =====")
-
-        for supplier, data in suppliers.items():
-
-            print(
-                f"\nSupplier: {supplier}"
-            )
-
-            print(
-                f"SKUs: {data['sku']}"
-            )
-
-            print(
-                f"Total Stock: "
-                f"{data['stock']}"
-            )
-
-            print(
-                f"Reorders: "
-                f"{data['reorders']}"
-            )
     def save_inventory(self):
-    data = [item.to_dict() for item in self.items]
+        data = [i.to_dict() for i in self.items]
 
-    with open(self.FILE_NAME, "w") as f:
-        json.dump(data, f, indent=4)
+        with open(FILE_NAME, "w") as f:
+            json.dump(data, f, indent=4)
 
-    print("Inventory saved.")
-            
+        print("Inventory saved.")
+
     def load_inventory(self):
-    try:
-        with open(self.FILE_NAME, "r") as f:
-            data = json.load(f)
+        try:
+            with open(FILE_NAME, "r") as f:
+                data = json.load(f)
 
-        self.items = [
-            InventoryItem.from_dict(item)
-            for item in data
-        ]
+            self.items = [InventoryItem.from_dict(x) for x in data]
 
-        print(f"Loaded {len(self.items)} items.")
+        except FileNotFoundError:
+            self.items = []
 
-    except FileNotFoundError:
-        print("No save file found. Starting empty inventory.")
-        self.items = []
-                                                                        
-def generate_purchase_orders(self):
-    print("\n==============================")
-    print(" PURCHASE ORDERS")
-    print("==============================")
+    def generate_purchase_orders(self):
+        print("\nPURCHASE ORDERS")
 
-    supplier_map = {}
+        supplier_map = {}
 
-    for item in self.items:
-        if item.needs_reorder():
-            if item.supplier not in supplier_map:
-                supplier_map[item.supplier] = []
-            supplier_map[item.supplier].append(item)
+        for item in self.items:
+            if item.needs_reorder():
+                supplier_map.setdefault(item.supplier, []).append(item)
 
-    if not supplier_map:
-        print("No purchase orders needed.")
-        return
+        if not supplier_map:
+            print("No purchase orders needed.")
+            return
 
-    po_id = 1
+        po_id = 1
 
-    for supplier, items in supplier_map.items():
-        print("\n------------------------------")
-        print(f"PO ID: PO-2026-{po_id:03d}")
-        print(f"Supplier: {supplier}")
-        print("Items:")
+        for supplier, items in supplier_map.items():
+            print(f"\nPO-2026-{po_id:03d} | {supplier}")
 
-        total_items = 0
+            for item in items:
+                print(f"- {item.sku} | {item.recommended_order_quantity()} pcs")
 
-        for item in items:
-            qty = item.recommended_order_quantity()
-            total_items += 1
+            po_id += 1
 
-            print(f"- {item.sku} | {qty} pcs")
-
-        print(f"Total SKUs: {total_items}")
-        print("------------------------------")
-
-        po_id += 1
-            
     def menu(self):
-
         while True:
+            print("\n1 Add  2 View  3 Search  4 PO  5 Update  6 Remove")
+            print("7 Summary 8 Reorder  9 Supplier  10 Save 11 Load 12 ABC 13 Exit")
 
-            print("\n======================================")
-            print("      INVENTORY REORDER PLANNER")
-            print("======================================")
-            print("1. Add SKU")
-            print("2. View Inventory")
-            print("3. Search SKU")
-            print("4. Generate Purchase Orders")
-            print("5. Update Stock")
-            print("6. Remove SKU")
-            print("7. Inventory Summary")
-            print("8. Reorder Report")
-            print("9. Supplier Summary")
-            print("10. Save Inventory")
-            print("11. Load Inventory")
-            print("12. ABC Analysis")
-            print("13. Exit")
-
-            choice = input("\nSelect option: ").strip()
+            choice = input("> ")
 
             if choice == "1":
                 self.add_item()
-
             elif choice == "2":
                 self.show_inventory()
-
             elif choice == "3":
                 self.search_sku()
-
             elif choice == "4":
                 self.generate_purchase_orders()
-
             elif choice == "5":
                 self.update_stock()
-
             elif choice == "6":
                 self.remove_sku()
-
             elif choice == "7":
                 self.inventory_summary()
-
             elif choice == "8":
                 self.reorder_report()
-
             elif choice == "9":
                 self.supplier_summary()
-
             elif choice == "10":
                 self.save_inventory()
-
             elif choice == "11":
                 self.load_inventory()
             elif choice == "12":
                 self.abc_analysis()
             elif choice == "13":
-
-                print("\nGoodbye.")
                 break
-
-            else:
-                print("\nInvalid option.")
 
 
 def main():
-
-    manager = InventoryManager()
-
-    manager.menu()
+    InventoryManager().menu()
 
 
 if __name__ == "__main__":
