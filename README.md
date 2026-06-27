@@ -1,28 +1,131 @@
-# supplier-risk-checker-tool
-# Risk Checker
+Inventory Reorder Planner
 
-A simple Python script that performs basic risk checks and returns a risk assessment based on predefined conditions.
+A terminal-based Inventory Reorder Planner written in Python. The project simulates fundamental inventory planning and procurement processes used in logistics and supply chain management.
 
-## Overview
+Features
 
-This project was created as a lightweight proof of concept for risk evaluation. The script processes user input, applies simple validation rules, and determines the corresponding risk level.
+Inventory Management
 
-## Requirements
+* Add new SKU
+* Prevent duplicate SKUs
+* View all inventory items
+* Search inventory by SKU
+* Update stock levels
+* Remove SKUs
 
-- Python 3.x
+Inventory Planning
 
-## Usage
+* Reorder Point calculation
+* Safety Stock support
+* Recommended Order Quantity calculation
+* Automatic reorder detection
 
-Run the script:
+Supplier Management
 
-```bash
-python main.py
-Example Output
-Risk Score: 45
-Risk Level: Medium
+* Assign supplier to each SKU
+* Supplier inventory summary
+* Reorders grouped by supplier
+
+Reporting
+
+* Inventory Summary
+* Reorder Report
+* Supplier Summary
+* Total inventory units
+* Average stock level
+* Highest stock item
+* Lowest stock item
+* Number of SKUs requiring reorder
+
+Input Validation
+
+* Prevent negative numbers
+* Prevent empty text fields
+* Prevent duplicate SKUs
+* Handle invalid numeric input
+
+⸻
+
 Project Structure
-.
-└── main.py
-License
 
-MIT License
+main.py
+
+Current version is intentionally implemented as a single Python file for learning purposes before being refactored into a multi-file application.
+
+⸻
+
+Example Menu
+
+======================================
+      INVENTORY REORDER PLANNER
+======================================
+1. Add SKU
+2. View Inventory
+3. Search SKU
+4. Update Stock
+5. Remove SKU
+6. Inventory Summary
+7. Reorder Report
+8. Supplier Summary
+9. Exit
+
+⸻
+
+Example Inventory Item
+
+SKU: A100
+Supplier: Bosch
+Current Stock: 85
+Daily Demand: 12
+Lead Time: 7
+Safety Stock: 20
+Reorder Point: 104
+Recommended Order: 295
+Status:
+REORDER REQUIRED
+
+⸻
+
+Concepts Demonstrated
+
+* Object-Oriented Programming (OOP)
+* Classes and Objects
+* Methods
+* Lists
+* Dictionaries
+* Loops
+* Conditional Logic
+* Input Validation
+* Inventory Planning
+* Procurement Fundamentals
+* Supply Chain Logic
+
+⸻
+
+Future Improvements
+
+* JSON data persistence
+* CSV import/export
+* Purchase Order generation
+* Warehouse location management
+* ABC Analysis
+* EOQ (Economic Order Quantity)
+* Demand Forecasting
+* Inventory valuation
+* Supplier performance scoring
+* Multi-warehouse support
+* Command history
+* Logging system
+
+⸻
+
+Technologies
+
+* Python 3
+* Terminal / CLI
+
+⸻
+
+Purpose
+
+This project is part of a logistics and supply chain learning portfolio. The objective is to model practical inventory planning workflows while continuously improving software design and Python programming skills.
