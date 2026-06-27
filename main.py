@@ -373,6 +373,50 @@ class InventoryManager:
                 "No products require reorder."
             )
 
+    def abc_analysis(self):
+    if not self.items:
+        print("Inventory is empty.")
+        return
+
+    # Annual consumption proxy (demand * stock importance)
+    scored_items = []
+
+    for item in self.items:
+        annual_value = item.daily_demand * 365 * item.stock
+        scored_items.append((item, annual_value))
+
+    # sort descending
+    scored_items.sort(key=lambda x: x[1], reverse=True)
+
+    total = sum(score for _, score in scored_items)
+
+    if total == 0:
+        print("No meaningful demand data.")
+        return
+
+    print("\n==============================")
+    print(" ABC ANALYSIS")
+    print("==============================")
+
+    cumulative = 0
+
+    for item, score in scored_items:
+        cumulative += score
+        ratio = cumulative / total
+
+        if ratio <= 0.7:
+            category = "A"
+        elif ratio <= 0.9:
+            category = "B"
+        else:
+            category = "C"
+
+        print(
+            f"{item.sku} | "
+            f"Supplier: {item.supplier} | "
+            f"Category: {category}"
+        )
+
     def supplier_summary(self):
 
         if len(self.items) == 0:
@@ -499,7 +543,8 @@ def generate_purchase_orders(self):
             print("9. Supplier Summary")
             print("10. Save Inventory")
             print("11. Load Inventory")
-            print("12. Exit")
+            print("12. ABC Analysis")
+            print("13. Exit")
 
             choice = input("\nSelect option: ").strip()
 
@@ -535,8 +580,9 @@ def generate_purchase_orders(self):
 
             elif choice == "11":
                 self.load_inventory()
-            
             elif choice == "12":
+                self.abc_analysis()
+            elif choice == "13":
 
                 print("\nGoodbye.")
                 break
