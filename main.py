@@ -1,104 +1,164 @@
-suppliers = []
+class InventoryItem:
+    def __init__(
+        self,
+        sku,
+        supplier,
+        stock,
+        daily_demand,
+        lead_time,
+        safety_stock
+    ):
+        self.sku = sku
+        self.supplier = supplier
+        self.stock = stock
+        self.daily_demand = daily_demand
+        self.lead_time = lead_time
+        self.safety_stock = safety_stock
 
-def add_supplier():
-    print("Enter supplier details:")
-    
-    name = input("Supplier Name: ")
-    contact = input("Contact Information: ")
-    email = input("Email Address: ")
-    on_time = float(input("On-time Delivery (%): "))
-    
+    def reorder_point(self):
+        return (
+            self.daily_demand *
+            self.lead_time
+        ) + self.safety_stock
 
-    delays = float(input("Number of Delays: "))
+    def recommended_order_quantity(self):
+        target_stock = (
+            self.daily_demand * 30
+        ) + self.safety_stock
 
-    quality_issues = int(input("Number of Quality Issues: "))
-    price_change = float(input("Price Change (%): "))
+        quantity = target_stock - self.stock
 
-    supplier = {
-        "name": name,
-        "contact": contact,
-        "email": email,
-        "on_time": on_time,
-        "delays": delays,
-        "quality_issues": quality_issues,
-        "price_change": price_change
-    }
+        if quantity < 0:
+            return 0
 
-    suppliers.append(supplier)
+        return quantity
 
-    print(f"Supplier '{name}' added successfully!")
+    def needs_reorder(self):
+        return self.stock <= self.reorder_point()
 
-def view_suuppliers():
-    print("Supplier List:")
-    for index, supplier in enumerate(suppliers):
-        print(f"{index + 1}. {supplier['name']} - Contact: {supplier['contact']}, Email: {supplier['email']}, On-time Delivery: {supplier['on_time']}, Delays: {supplier['delays']}, Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
+    def status(self):
+        if self.needs_reorder():
+            return "REORDER REQUIRED"
 
-    if len (suppliers) == 0:
-        print("No suppliers available.")
-        return
-    
-    for index, supplier in enumerate(suppliers):
-        print(f"{index + 1}. {supplier['name']} - Contact: {supplier['contact']}, Email: {supplier['email']}, On-time Delivery: {supplier['on_time']}, Delays: {supplier['delays']}, Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
+        return "STOCK LEVEL OK"
 
-    print()
-
-def calculate_risk(supplier):  
-    score = 0
-
-    score += (100 - supplier["on_time"]) * 0.5
-    score += supplier["delays"] * 5
-    score += supplier["quality_issues"] * 10
-    score += supplier["price_change"] * 2
-
-    return round(score, 1)
+    def display(self):
+        print("\n------------------------------")
+        print(f"SKU: {self.sku}")
+        print(f"Supplier: {self.supplier}")
+        print(f"Current Stock: {self.stock}")
+        print(f"Daily Demand: {self.daily_demand}")
+        print(f"Lead Time: {self.lead_time} days")
+        print(f"Safety Stock: {self.safety_stock}")
+        print(f"Reorder Point: {self.reorder_point()}")
+        print(
+            f"Recommended Order: "
+            f"{self.recommended_order_quantity()}"
+        )
+        print(f"Status: {self.status()}")
+        print("------------------------------")
 
 
-def get_risk_level(score):
-    if score < 30:
-        return "Low"
-    elif score < 60:
-        return "Medium"
-    else:
-        return "High"
-
-def generate_risk_report():
-    print("Supplier Risk Report:")
-    for supplier in suppliers:
-        score = calculate_risk(supplier)
-        risk_level = get_risk_level(score)
-
-        print(f"Supplier: {supplier['name']}, Risk Score: {score}, Risk Level: {risk_level}")
-        print(f"Contact: {supplier['contact']}, Email: {supplier['email']}, On-time Delivery: {supplier['on_time']}, Delays: {supplier['delays']}, Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
-        print(f"Risk Level: {risk_level}")
-        print(f"Risk Score: {score}")
-        print(f"on-time Delivery: {supplier['on_time']}, Delays: {supplier['delays']}, Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
-        print(f"delays: {supplier['delays']}, Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
-        print(f"Quality Issues: {supplier['quality_issues']}, Price Change: {supplier['price_change']}%")
-        print(f"Price Change: {supplier['price_change']}%")
-        print("-" * 35)
-
-def main():
+def get_positive_int(prompt):
     while True:
-        print("Supplier Management System")
-        print("1. Add Supplier")
-        print("2. View Suppliers")
-        print("3. Generate Risk Report")
-        print("4. Exit")
 
-        choice = input("Enter your choice (1-4): ")
+        try:
+            value = int(input(prompt))
 
-        if choice == '1':
-            add_supplier()
-        elif choice == '2':
-            view_suuppliers()
-        elif choice == '3':
-            generate_risk_report()
-        elif choice == '4':
-            print("Exiting the program.")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+            if value < 0:
+                print(
+                    "Value cannot be negative."
+                )
+                continue
+
+            return value
+
+        except ValueError:
+            print(
+                "Please enter a valid number."
+            )
 
 
-if __name__ == "__main__":
-    main()
+def get_non_empty(prompt):
+
+    while True:
+
+        value = input(prompt).strip()
+
+        if value == "":
+            print(
+                "Input cannot be empty."
+            )
+            continue
+
+        return value
+
+
+class InventoryManager:
+
+    def __init__(self):
+        self.items = []
+
+    def add_item(self):
+
+        print("\nADD NEW SKU")
+
+        sku = get_non_empty("SKU: ")
+
+        for item in self.items:
+
+            if item.sku.lower() == sku.lower():
+
+                print(
+                    "SKU already exists."
+                )
+                return
+
+        supplier = get_non_empty(
+            "Supplier: "
+        )
+
+        stock = get_positive_int(
+            "Current Stock: "
+        )
+
+        demand = get_positive_int(
+            "Daily Demand: "
+        )
+
+        lead = get_positive_int(
+            "Lead Time (days): "
+        )
+
+        safety = get_positive_int(
+            "Safety Stock: "
+        )
+
+        item = InventoryItem(
+            sku,
+            supplier,
+            stock,
+            demand,
+            lead,
+            safety
+        )
+
+        self.items.append(item)
+
+        print(
+            "\nSKU added successfully."
+        )
+
+    def show_inventory(self):
+
+        if len(self.items) == 0:
+
+            print(
+                "\nInventory is empty."
+            )
+            return
+
+        print("\n===== INVENTORY =====")
+
+        for item in self.items:
+            item.display()
