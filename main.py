@@ -69,7 +69,17 @@ class InventoryItem:
         "lead_time": self.lead_time,
         "safety_stock": self.safety_stock
     }
-
+    
+    @staticmethod
+def from_dict(data):
+    return InventoryItem(
+        data["sku"],
+        data["supplier"],
+        data["stock"],
+        data["daily_demand"],
+        data["lead_time"],
+        data["safety_stock"]
+    )
 def get_positive_int(prompt):
     while True:
 
