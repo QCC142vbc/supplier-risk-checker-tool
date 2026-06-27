@@ -73,7 +73,8 @@ class InventoryItem:
         )
         print(f"Status: {self.status()}")
         print("------------------------------")
-
+        print(f"Forecast Demand: {self.forecast_demand():.2f}")
+        
     def to_dict(self):
         return {
         "sku": self.sku,
