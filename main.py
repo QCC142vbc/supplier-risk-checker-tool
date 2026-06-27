@@ -397,6 +397,44 @@ class InventoryManager:
                 f"{data['reorders']}"
             )
             
+def generate_purchase_orders(self):
+    print("\n==============================")
+    print(" PURCHASE ORDERS")
+    print("==============================")
+
+    supplier_map = {}
+
+    for item in self.items:
+        if item.needs_reorder():
+            if item.supplier not in supplier_map:
+                supplier_map[item.supplier] = []
+            supplier_map[item.supplier].append(item)
+
+    if not supplier_map:
+        print("No purchase orders needed.")
+        return
+
+    po_id = 1
+
+    for supplier, items in supplier_map.items():
+        print("\n------------------------------")
+        print(f"PO ID: PO-2026-{po_id:03d}")
+        print(f"Supplier: {supplier}")
+        print("Items:")
+
+        total_items = 0
+
+        for item in items:
+            qty = item.recommended_order_quantity()
+            total_items += 1
+
+            print(f"- {item.sku} | {qty} pcs")
+
+        print(f"Total SKUs: {total_items}")
+        print("------------------------------")
+
+        po_id += 1
+            
     def menu(self):
 
         while True:
