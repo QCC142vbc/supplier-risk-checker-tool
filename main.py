@@ -16,7 +16,14 @@ class InventoryItem:
         self.daily_demand = daily_demand
         self.lead_time = lead_time
         self.safety_stock = safety_stock
+    
+    def record_demand(self, value):
+    self.demand_history.append(value)
 
+    # limit memory (last 30 days)
+    if len(self.demand_history) > 30:
+        self.demand_history.pop(0)
+    
     def reorder_point(self):
         return (
             self.daily_demand *
