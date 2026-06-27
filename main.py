@@ -114,12 +114,12 @@ def get_non_empty(prompt):
 
         return value
 
-
+FILE_NAME = "inventory.json"
 class InventoryManager:
 
     def __init__(self):
         self.items = []
-
+        self.load_inventory()
     def add_item(self):
 
         print("\nADD NEW SKU")
@@ -417,7 +417,30 @@ class InventoryManager:
                 f"Reorders: "
                 f"{data['reorders']}"
             )
+    def save_inventory(self):
+    data = [item.to_dict() for item in self.items]
+
+    with open(self.FILE_NAME, "w") as f:
+        json.dump(data, f, indent=4)
+
+    print("Inventory saved.")
             
+    def load_inventory(self):
+    try:
+        with open(self.FILE_NAME, "r") as f:
+            data = json.load(f)
+
+        self.items = [
+            InventoryItem.from_dict(item)
+            for item in data
+        ]
+
+        print(f"Loaded {len(self.items)} items.")
+
+    except FileNotFoundError:
+        print("No save file found. Starting empty inventory.")
+        self.items = []
+                                                                        
 def generate_purchase_orders(self):
     print("\n==============================")
     print(" PURCHASE ORDERS")
