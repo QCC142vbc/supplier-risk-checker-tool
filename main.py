@@ -115,6 +115,7 @@ def get_non_empty(prompt):
         return value
 
 FILE_NAME = "inventory.json"
+self.demand_history = []
 class InventoryManager:
 
     def __init__(self):
