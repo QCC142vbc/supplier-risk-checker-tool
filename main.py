@@ -396,3 +396,65 @@ class InventoryManager:
                 f"Reorders: "
                 f"{data['reorders']}"
             )
+            
+    def menu(self):
+
+        while True:
+
+            print("\n======================================")
+            print("      INVENTORY REORDER PLANNER")
+            print("======================================")
+            print("1. Add SKU")
+            print("2. View Inventory")
+            print("3. Search SKU")
+            print("4. Update Stock")
+            print("5. Remove SKU")
+            print("6. Inventory Summary")
+            print("7. Reorder Report")
+            print("8. Supplier Summary")
+            print("9. Exit")
+
+            choice = input("\nSelect option: ").strip()
+
+            if choice == "1":
+                self.add_item()
+
+            elif choice == "2":
+                self.show_inventory()
+
+            elif choice == "3":
+                self.search_sku()
+
+            elif choice == "4":
+                self.update_stock()
+
+            elif choice == "5":
+                self.remove_sku()
+
+            elif choice == "6":
+                self.inventory_summary()
+
+            elif choice == "7":
+                self.reorder_report()
+
+            elif choice == "8":
+                self.supplier_summary()
+
+            elif choice == "9":
+
+                print("\nGoodbye.")
+                break
+
+            else:
+                print("\nInvalid option.")
+
+
+def main():
+
+    manager = InventoryManager()
+
+    manager.menu()
+
+
+if __name__ == "__main__":
+    main()
